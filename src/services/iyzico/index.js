@@ -389,7 +389,7 @@ const createPaymentWithSavedCard = () => {
     })
 }
 
-createPaymentWithSavedCard();
+// createPaymentWithSavedCard();
 
 // createPaymentAndSaveCard();
 // readACardForUser();
@@ -400,6 +400,286 @@ createPaymentWithSavedCard();
  3D secure payment
  ----------------- */
 
- // const initialize3DSPayments = ()
+ const initialize3DSPayments = () =>{
+    Payments3DS.initializePayment({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        price:"350",  // ödeme kırılımı totali 
+        paidPrice:"350", // asıl ödenecek olan tutar
+        currency: Iyzipay.CURRENCY.TRY,
+        installment: "1",
+        basket: nanoid(),
+        paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+        paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+        callbackUrl: "htpps://localhost/api/payment/3ds/complete",
+        paymentCard: {
+            cardHolderName:"John Doe",
+            cardNumber:"5528790000000008",
+            expireMonth:"12",
+            expireYear:"2030",
+            cvc:"123",
+            registerCard: "0"
+        },
+        buyer: {
+            id:"346900",
+            name: "John",
+            surname: "Doe",
+            gsmNumber: "+905554445454",
+            email: "email@email.com",
+            identityNumber: "343556655678",
+            lastLoginDate: "2020-10-05 12:12:12",
+            registrationDate: "2020-10-05 12:12:12",
+            registrationAddress:"ornek adres ornek adres ornek adres",
+            ip:"85.24.78.112",
+            city:"Ankara",
+            country:"Turkey",
+            zipCode:"34732",
+        },
+        shippingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        billingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        basketItems:[
+            {
+                id:"ATS2",
+                name:"Iphone",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 160
+            },
+            {
+                id:"ATS3",
+                name:"Samsung",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 90
+            },
+            {
+                id:"ATS4",
+                name:"Nokia",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 100
+                },
+    ]
 
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("9-3d_payment_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("9-3d_payment_fail",err);
+    })
+ }
+
+//  initialize3DSPayments();
+
+
+const complete3DSPayment = () =>{
+    Payments3DS.completePayment({
+        locale: Iyzipay.LOCALE.TR,
+        conservationId: nanoid(),
+        paymentId: "21405640",
+        conversationData: "conservation data"
+    }).then((result)=>{
+        console.log(result);
+        Logs.logFile("10-3d_payment_completed_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("10-3d_payment_completed_fail",err);
+    })
+}
+
+//complete3DSPayment();
+
+
+
+/* ---------------
+ 3D secure payment with save card
+ ----------------- */
+ const initialize3DSPaymentsWithSaveCard = () =>{
+    Payments3DS.initializePayment({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        price:"350",  // ödeme kırılımı totali 
+        paidPrice:"350", // asıl ödenecek olan tutar
+        currency: Iyzipay.CURRENCY.TRY,
+        installment: "1",
+        basket: nanoid(),
+        paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+        paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+        callbackUrl: "htpps://localhost/api/payment/3ds/complete",
+        paymentCard: {
+            cardUserKey: "b/ktW7jrCG25DYWVdujQf1FUYes=",
+            cardToken: "oCuMmNo/VynBUBrqT9A2ukq+Xhg="
+        },
+        buyer: {
+            id:"346900",
+            name: "John",
+            surname: "Doe",
+            gsmNumber: "+905554445454",
+            email: "email@email.com",
+            identityNumber: "343556655678",
+            lastLoginDate: "2020-10-05 12:12:12",
+            registrationDate: "2020-10-05 12:12:12",
+            registrationAddress:"ornek adres ornek adres ornek adres",
+            ip:"85.24.78.112",
+            city:"Ankara",
+            country:"Turkey",
+            zipCode:"34732",
+        },
+        shippingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        billingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        basketItems:[
+            {
+                id:"ATS2",
+                name:"Iphone",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 160
+            },
+            {
+                id:"ATS3",
+                name:"Samsung",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 90
+            },
+            {
+                id:"ATS4",
+                name:"Nokia",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 100
+                },
+    ]
+
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("11-3ds_saved_credit_card_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("11-3ds_saved_credit_card_fail",err);
+    })
+ }
+
+//  initialize3DSPaymentsWithSaveCard();
+
+
+
+
+const initialize3DSPaymentsWithNewCardAndRegister = () =>{
+    Payments3DS.initializePayment({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        price:"350",  // ödeme kırılımı totali 
+        paidPrice:"350", // asıl ödenecek olan tutar
+        currency: Iyzipay.CURRENCY.TRY,
+        installment: "1",
+        basket: nanoid(),
+        paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+        paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+        callbackUrl: "htpps://localhost/api/payment/3ds/complete",
+        paymentCard: {
+            cardUserKey: "b/ktW7jrCG25DYWVdujQf1FUYes=",
+            cardAlias: "My_credit_card_after_payment",
+            cardHolderName:"John Doe",
+            cardNumber:"5528790000000008",
+            expireMonth:"12",
+            expireYear:"2030",
+            cvc:"123",
+            registerCard: "1"
+        },
+        buyer: {
+            id:"346900",
+            name: "John",
+            surname: "Doe",
+            gsmNumber: "+905554445454",
+            email: "email@email.com",
+            identityNumber: "343556655678",
+            lastLoginDate: "2020-10-05 12:12:12",
+            registrationDate: "2020-10-05 12:12:12",
+            registrationAddress:"ornek adres ornek adres ornek adres",
+            ip:"85.24.78.112",
+            city:"Ankara",
+            country:"Turkey",
+            zipCode:"34732",
+        },
+        shippingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        billingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        basketItems:[
+            {
+                id:"ATS2",
+                name:"Iphone",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 160
+            },
+            {
+                id:"ATS3",
+                name:"Samsung",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 90
+            },
+            {
+                id:"ATS4",
+                name:"Nokia",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 100
+                },
+    ]
+
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("11-3ds_saved_credit_card_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("11-3ds_saved_credit_card_fail",err);
+    })
+ }
 
