@@ -5,6 +5,8 @@ import * as Payments from "./methods/payments";
 import nanoid  from "../../utils/nanoid";
 import * as Logs from "../../utils/logs";
 import * as Payments3DS from "./methods/threeds-payments";
+import * as Checkouts from "./methods/checkout";
+import * as CancelPayments from "./methods/cancelPayment";
 
 
 const createUserAndCards = ()=>{
@@ -313,8 +315,8 @@ const createPaymentWithSavedCard = () => {
     return Payments.createPayment({
         locale: Iyzipay.LOCALE.TR,
         conversationId: nanoid(),
-        price:"350",  // ödeme kırılımı totali 
-        paidPrice:"350", // asıl ödenecek olan tutar
+        price:"500",  // ödeme kırılımı totali 
+        paidPrice:"500", // asıl ödenecek olan tutar
         currency: Iyzipay.CURRENCY.TRY,
         installment: "1",
         basket: nanoid(),
@@ -360,7 +362,7 @@ const createPaymentWithSavedCard = () => {
                 category1:"Phones",
                 category1:"Phones",
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: 160
+                price: 260
             },
             {
                 id:"ATS3",
@@ -368,7 +370,7 @@ const createPaymentWithSavedCard = () => {
                 category1:"Phones",
                 category1:"Phones",
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: 90
+                price: 130
             },
             {
                 id:"ATS4",
@@ -376,7 +378,7 @@ const createPaymentWithSavedCard = () => {
                 category1:"Phones",
                 category1:"Phones",
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: 100
+                price: 110
                 },
     ]
 
@@ -683,3 +685,148 @@ const initialize3DSPaymentsWithNewCardAndRegister = () =>{
     })
  }
 
+//  initialize3DSPaymentsWithNewCardAndRegister();
+// readACardForUser();
+
+
+
+/* ---------------
+checkout Form method
+ ----------------- */
+
+ const initializeCheckoutForm = () => {
+    Checkouts.initialize({locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        price:"350",  // ödeme kırılımı totali 
+        paidPrice:"350", // asıl ödenecek olan tutar
+        currency: Iyzipay.CURRENCY.TRY,
+        installment: "1",
+        basket: nanoid(),
+        paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+        paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+        callbackUrl: "htpps://localhost/api/checkout/complete/payment",
+        cardUserKey: "b/ktW7jrCG25DYWVdujQf1FUYes=",
+        enableInstallments:[1,2,3,4,5,6,7,8,9],
+        buyer: {
+            id:"346900",
+            name: "John",
+            surname: "Doe",
+            gsmNumber: "+905554445454",
+            email: "email@email.com",
+            identityNumber: "343556655678",
+            lastLoginDate: "2020-10-05 12:12:12",
+            registrationDate: "2020-10-05 12:12:12",
+            registrationAddress:"ornek adres ornek adres ornek adres",
+            ip:"85.24.78.112",
+            city:"Ankara",
+            country:"Turkey",
+            zipCode:"34732",
+        },
+        shippingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        billingAddress:{
+            contactName:"John Doe",
+            city:"Ankara",
+            country:"Turkey",
+            address:"ornek adres ornek adres ornek adres",
+            zipCode:"34732",
+        },
+        basketItems:[
+            {
+                id:"ATS2",
+                name:"Iphone",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 160
+            },
+            {
+                id:"ATS3",
+                name:"Samsung",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 90
+            },
+            {
+                id:"ATS4",
+                name:"Nokia",
+                category1:"Phones",
+                category1:"Phones",
+                itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+                price: 100
+                },
+    ]}).then((result) => {
+        console.log(result);
+        Logs.logFile("12-checkout_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("12-checkout_fail",err);
+    })
+ }
+
+//  initializeCheckoutForm();
+
+
+// checkout form kontrol methodu
+const getFormPayment = () => {
+    Checkouts.getFormPayment({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        token: "bf76d0ce-e17f-4be9-862b-04f07a29e1e4"
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("13-checkout_getdetails_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("13-checkout_getdetails_fail",err);
+    })
+}
+
+// getFormPayment();
+
+//payment cancel method 
+
+const cancelPayment = ()=> {
+    CancelPayments.cancelPayment({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        paymentId:"21405649",
+        ip:"85.24.78.112"
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("14-cancelPayment_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("14-cancelPayment_fail",err);
+    })
+}
+
+// cancelPayment();
+
+const cancelPaymentWithReason = ()=> {
+    CancelPayments.cancelPayment({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        paymentId:"21391437",
+        ip:"85.24.78.112",
+        reason: Iyzipay.REFUND_REASON.BUYER_REQUEST,
+        description: "Canceled by user request."
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("15_user_request_cancelpayment_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("15_user_request_cancelpayment_fail",err);
+    })
+}
+
+cancelPaymentWithReason();
+
+
+// createPaymentWithSavedCard();
