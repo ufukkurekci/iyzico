@@ -7,7 +7,7 @@ import * as Logs from "../../utils/logs";
 import * as Payments3DS from "./methods/threeds-payments";
 import * as Checkouts from "./methods/checkout";
 import * as CancelPayments from "./methods/cancelPayment";
-
+import * as RefundPayments from "./methods/refund-payment";
 
 const createUserAndCards = ()=>{
     Cards.createUserCard({
@@ -315,8 +315,8 @@ const createPaymentWithSavedCard = () => {
     return Payments.createPayment({
         locale: Iyzipay.LOCALE.TR,
         conversationId: nanoid(),
-        price:"500",  // ödeme kırılımı totali 
-        paidPrice:"500", // asıl ödenecek olan tutar
+        price:"5000",  // ödeme kırılımı totali 
+        paidPrice:"5000", // asıl ödenecek olan tutar
         currency: Iyzipay.CURRENCY.TRY,
         installment: "1",
         basket: nanoid(),
@@ -362,7 +362,7 @@ const createPaymentWithSavedCard = () => {
                 category1:"Phones",
                 category1:"Phones",
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: 260
+                price: 2600
             },
             {
                 id:"ATS3",
@@ -370,7 +370,7 @@ const createPaymentWithSavedCard = () => {
                 category1:"Phones",
                 category1:"Phones",
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: 130
+                price: 1300
             },
             {
                 id:"ATS4",
@@ -378,7 +378,7 @@ const createPaymentWithSavedCard = () => {
                 category1:"Phones",
                 category1:"Phones",
                 itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
-                price: 110
+                price: 1100
                 },
     ]
 
@@ -826,7 +826,50 @@ const cancelPaymentWithReason = ()=> {
     })
 }
 
-cancelPaymentWithReason();
+// cancelPaymentWithReason();
 
 
 // createPaymentWithSavedCard();
+
+
+// refund payments 
+
+const refundPayment = () => {
+    RefundPayments.refundPayments({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        paymentTransactionId:"23367304",
+        ip:"85.24.78.112",
+        price:"10",
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("16_refund_payment_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("16_refund_payment_fail",err);
+    })
+}
+
+// refundPayment();
+
+
+// refund with user request
+const refundPaymentWithReason = () => {
+    RefundPayments.refundPayments({
+        locale: Iyzipay.LOCALE.TR,
+        conversationId: nanoid(),
+        paymentTransactionId:"23367304",
+        ip:"85.24.78.112",
+        price:"50",
+        reason: Iyzipay.REFUND_REASON.BUYER_REQUEST,
+        description: "Canceled by user request."
+    }).then((result) => {
+        console.log(result);
+        Logs.logFile("17_refund_payment_with_request_success",result);
+    }).catch((err)=> {
+        console.log(err);
+        Logs.logFile("17_refund_payment_with_request_fail",err);
+    })
+}
+
+// refundPaymentWithReason();

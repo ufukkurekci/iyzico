@@ -1,3 +1,14 @@
-import fs from "fs";
+import dotenv from "dotenv";
+import config from "./config";
 
-fs.writeFileSync("test.txt","ex",{encoding:"utf-8"})
+const envPath = config?.production
+    ? "./env/.prod"
+    : "./env/.dev"
+
+dotenv.config({
+    path: envPath
+})
+
+
+
+console.log(process.env.DEPLOYMENT)
