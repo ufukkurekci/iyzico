@@ -7,10 +7,11 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 import cors from "cors";
+import DBModules from "./db";
+import Users from "./db/users";
 import helmet from "helmet";
 import GenericErrorHandler from "./middlewares/GenericErrorHandler";
 import ApiError from "./error/ApiError";
-
 const envPath = config?.production
     ? "./env/.prod"
     : "./env/.dev"
