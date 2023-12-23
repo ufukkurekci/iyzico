@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import nanoid from "../utils/nanoid";
 import Products from "./products";
+import Carts from "./carts";
 
 const {Schema} = mongoose;
 const {ObjectId} = Schema.Types;

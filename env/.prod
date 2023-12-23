@@ -2,3 +2,5 @@ DEPLOYMENT=PRODUCTION
 HTTPS_ENABLED=false
 PORT=8080
 LOGGER=tiny
+MONGO_URI=mongodb://admin:password@172.25.30.159:27017/prod?directConnection=true&authMechanism=SCRAM-SHA-1
+JWT_SECRET=61d055016272c60f701be7ac_MKFRGOERPOJCXBkdsf

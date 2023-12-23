@@ -92,7 +92,7 @@ const UsersSchema = new Schema(
         required: true,
         default: "85.34.78.112"
     },
-    cardUserKey:{
+    cardUserKey:{ 
         type: String,
         required: false,
         unique: true
@@ -128,7 +128,7 @@ const Users = mongoose.model("Users",UsersSchema);
 
 Users.starterData = [
     {
-        _id: mongoose.Types.ObjectId("61d054de0d8af19519e88a61"),
+        _id: new mongoose.Types.ObjectId("61d054de0d8af19519e88a61"),
         locale: "tr",
         name: "John",
         surname: "Doe",
