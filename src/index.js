@@ -17,6 +17,7 @@ import passport from "passport";
 import Session from "./middlewares/Session";
 import { ExtractJwt , Strategy as JwtStrategy } from "passport-jwt";
 import test from "node:test";
+import routes from "./routes/index" 
 
 const envPath = config?.production
     ? "./env/.prod"
@@ -34,8 +35,15 @@ mongoose.connect(process.env.MONGO_URI,
     console.log(err);
 })
 // END MONGO CONNECT
-const app = express();
 
+const app = express();
+const router = express.Router();
+
+routes.forEach((routeFn) => {
+    routeFn(router)
+})
+
+app.use("/api",router);
 app.use(logger(process.env.LOGGER))
 
 app.use(helmet());
@@ -75,9 +83,6 @@ passport.use(
             try {
                 const user = await Users.findOne({_id: jwtPayload._id});
                 if (user) {
-                    console.log("*************")
-                    console.log(user);
-                    console.log("*************")
                     done(null,user.toJSON())
                 }
                 else {
