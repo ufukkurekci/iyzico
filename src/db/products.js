@@ -112,6 +112,6 @@ Products.initializer = async()=>{
     }
 }
 
-Products.initializer();
+//Products.initializer();
 
 export default Products;
