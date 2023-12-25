@@ -45,7 +45,7 @@ export default (router) => {
 
         res.status(200).json(cards);
     })
-
+    // card delete with card token 
     router.delete("/cards/delete-by-token", Session, async(req,res)=> {
         let {cardToken} = req.body;
         if (!cardToken) {
@@ -58,8 +58,39 @@ export default (router) => {
             cardToken:cardToken
         })
 
-        res.json(deleteResult);
+        res.json(deleteResult).status(200);
 
 
+    })
+
+    // card delete with card index 
+    // /cards/:0/delete-by-index  => cardIndex queystring as a querystring get a integer value .
+
+    router.delete("/cards/:cardIndex/delete-by-index",Session,async(req,res)=>{
+
+        if (!req.params?.cardIndex) {
+            throw new ApiError("CardIndex is required",400,"cardIndexRequired");
+        }
+        let cards = await Cards.getUserCards({
+            locale:req.user.locale,
+            conversationId:nanoid(),
+            cardUserKey:req.user?.cardUserKey
+        })
+
+        const index = parseInt(req.params?.cardIndex);
+        if (index >= cards?.cardDetails.length) {
+            throw new ApiError("Card not exist",400,"cardnotfound")
+        }
+
+        const cardToken = cards?.cardDetails[index];
+
+        let deleteResult = await Cards.deleteUserCard({
+            locale:req.user?.locale,
+            conversationId:nanoid(),
+            cardUserKey:req.user?.cardUserKey,
+            cardToken:cardToken
+        })
+
+        res.json(deleteResult).status(200);
     })
 }
