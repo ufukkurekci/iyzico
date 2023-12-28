@@ -3,7 +3,7 @@ import Carts from "../db/carts"
 import PaymentsSuccess from "../db/payment-success"
 import PaymentsFailed from "../db/payment-failed"
 
-export default CompletePayment = async(result) => {
+export const CompletePayment = async(result) => {
     if (result?.status === "success") {
         await Carts.updateOne({
             _id: new mongoose.Types.ObjectId(result?.basketId)
