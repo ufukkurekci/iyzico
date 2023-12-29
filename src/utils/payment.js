@@ -14,15 +14,15 @@ export const CompletePayment = async(result) => {
         await PaymentsSuccess.create({
             status:result?.status,
             cardId:result?.basketId,
-            conservationId:result?.conservationId,
+            conservationId:result?.conversationId,
             currency:result?.currency,
             paymentId:result?.paymentId,
             price:result?.price,
             paidPrice:result?.paidPrice,
-            ItemTransactions:result?.ItemTransactions.map(item => {
+            itemTransactions:result?.itemTransactions.map(item => {
                 return {
                     itemId:item?.itemId,
-                    paymentTrasactionId:item?.paymentTrasactionId,
+                    paymentTransactionId:item?.paymentTransactionId,
                     price:item?.price,
                     paidPrice:item?.paidPrice
                 }

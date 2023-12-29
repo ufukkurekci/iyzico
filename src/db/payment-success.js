@@ -14,7 +14,7 @@ const ItemTransactionSchema = new Schema({
         unique: true,
         required: true
     },
-    ItemId:{
+    itemId:{
         type: ObjectId,
         required: true,
         ref: Products
@@ -60,11 +60,6 @@ const PaymentSuccessSchema = new Schema({
         required: true,
         enum:["TRY","USD","EUR"]
     },
-    paymentTransactionId:{
-        type: String,
-        required: true,
-        unique: true
-    },
     price:{
         type: Number,
         required: true
@@ -73,7 +68,7 @@ const PaymentSuccessSchema = new Schema({
         type: Number,
         required: true
     },
-    ItemTransactions:{
+    itemTransactions:{
         type: [ItemTransactionSchema]
     },
     log:{
