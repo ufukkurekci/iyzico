@@ -6,6 +6,7 @@ import { createPayment } from "../services/iyzico/methods/payments";
 import { CompletePayment } from "../utils/payment.js";
 import Iyzipay from "iyzipay";
 import moment from "moment";
+import Users from "../db/users.js";
 
 export default (router) => {
     // make payment with new card
@@ -100,7 +101,7 @@ export default (router) => {
 
 
     //  make payment and save card
-    router.post("/payments/:cartId/with-new-card",Session, async(req,res) => {
+    router.post("/payments/:cartId/with-new-card/register-card",Session, async(req,res) => {
         const {card} = req.body;
 
         if (!card) {
@@ -117,8 +118,12 @@ export default (router) => {
             throw new ApiError("Card not found", 404 , "cardNotFound");
         }
         if (cart.completed) {
-            throw new ApiError("Card is completed", 400 , "cardCompleted");
+            throw new ApiError("Cart is completed", 400 , "cartCompleted");
         }
+        if (req.user?.cardUserKey) {
+            card.cardUserKey = req.user?.cardUserKey;
+        }
+
         card.registerCard = "0";
         const paidPrice = cart.products.map((product) => product.price).reduce((a,b) => a+b,0);
 
@@ -176,6 +181,11 @@ export default (router) => {
 
 
         let result = await createPayment(data);
+        if (!req.user?.cardUserKey) {
+            const user = await Users.findOne({_id:req.user?._id});
+            user.cardUserKey = result?.cardUserKey;
+            await user.save();
+        }
         console.log(result);
         await CompletePayment(result);
         res.json(result);

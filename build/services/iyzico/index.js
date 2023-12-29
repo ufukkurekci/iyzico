@@ -17,7 +17,7 @@ const createUserAndCards = () => {
   Cards.createUserCard({
     locale: _iyzipay.default.LOCALE.TR,
     conversationId: (0, _nanoid.default)(),
-    email: "ufukkurekci@gmail.com",
+    email: "email@email.com",
     externalId: (0, _nanoid.default)(),
     card: {
       cardAlias: "my_credit_card",
@@ -45,7 +45,7 @@ const createACardForUser = () => {
   Cards.createUserCard({
     locale: _iyzipay.default.LOCALE.TR,
     conversationId: (0, _nanoid.default)(),
-    email: "ufukkurekci@gmail.com",
+    email: "email@email.com",
     externalId: (0, _nanoid.default)(),
     cardUserKey: "b/ktW7jrCG25DYWVdujQf1FUYes=",
     card: {
@@ -471,7 +471,7 @@ const initialize3DSPayments = () => {
 const complete3DSPayment = () => {
   Payments3DS.completePayment({
     locale: _iyzipay.default.LOCALE.TR,
-    conservationId: (0, _nanoid.default)(),
+    conversationId: (0, _nanoid.default)(),
     paymentId: "21405640",
     conversationData: "conservation data"
   }).then(result => {

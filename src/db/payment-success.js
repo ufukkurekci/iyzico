@@ -12,7 +12,7 @@ const ItemTransactionSchema = new Schema({
         type: String,
         default: nanoid(),
         unique: true,
-        required: true
+        required: false
     },
     itemId:{
         type: ObjectId,
@@ -51,7 +51,7 @@ const PaymentSuccessSchema = new Schema({
         required: true,
         ref:Carts
     },
-    conservationId:{
+    conversationId:{
         type: String,
         required: true
     },

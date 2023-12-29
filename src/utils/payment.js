@@ -14,7 +14,7 @@ export const CompletePayment = async(result) => {
         await PaymentsSuccess.create({
             status:result?.status,
             cardId:result?.basketId,
-            conservationId:result?.conversationId,
+            conversationId:result?.conversationId,
             currency:result?.currency,
             paymentId:result?.paymentId,
             price:result?.price,
@@ -34,7 +34,7 @@ export const CompletePayment = async(result) => {
     else{
         await PaymentsFailed.create({
             status:result?.status,
-            conservationId:result?.conservationId,
+            conversationId:result?.conversationId,
             errorCode:result?.errorCode,
             errorMessage:result?.errorMessage,
             log:result

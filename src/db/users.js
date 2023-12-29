@@ -141,7 +141,8 @@ Users.starterData = [
         city: "Istanbul",
         country: "Turkey",
         zipCode: "34732",
-        ip: "85.34.78.112"
+        ip: "85.34.78.112",
+        cardUserKey:""
     }
 ]
 
@@ -163,6 +164,6 @@ Users.initializer = async()=>{
     }
 }
 
-//Users.initializer();
+Users.initializer();
 
 export default Users;
