@@ -10,8 +10,10 @@ const createPayment = data => {
   return new Promise((resolve, reject) => {
     _iyzipay.default.payment.create(data, (err, result) => {
       if (err) {
+        console.log(data);
         reject(err);
       } else {
+        console.log(data);
         resolve(result);
       }
     });

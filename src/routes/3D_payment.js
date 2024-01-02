@@ -1,17 +1,40 @@
-import nanoid from "../utils/nanoid.js";
-import Carts from "../db/carts";
-import ApiError from "../error/ApiError";
-import Session from "../middlewares/Session";
-import { createPayment } from "../services/iyzico/methods/payments";
-import { CompletePayment } from "../utils/payment.js";
 import Iyzipay from "iyzipay";
 import moment from "moment";
+import Carts from "../db/carts";
 import Users from "../db/users.js";
+import ApiError from "../error/ApiError";
+import Session from "../middlewares/Session";
+import * as Payments_3D from "../services/iyzico/methods/threeds-payments.js";
 import * as Cards from "../services/iyzico/methods/card.js";
+import nanoid from "../utils/nanoid.js";
+import { CompletePayment } from "../utils/payment.js";
+
 
 export default (router) => {
-    // make payment with new card
-    router.post("/payments/:cartId/with-new-card",Session, async(req,res) => {
+    router.post("/threeds/payments/complete",async(req,res)=>{
+        if (!req.body?.paymentId) {
+            throw new ApiError("Payment id is reqiured",400,"paymentIdRequired");
+        }
+        if (req.body?.status != "success") {
+            throw new ApiError("Payment cant be started",400,"paymentcantstarted");
+        }
+
+        const data = {
+            locale:"tr",
+            conversationId:nanoid(),
+            paymentId:req.body?.paymentId,
+            conversationData:req.body?.conversationData
+        }
+
+        const result = await Payments_3D.completePayment(data);
+
+        await CompletePayment(result);
+        res.json(result).status(200);
+    })
+
+   // make payment with new card  3DS
+
+    router.post("/threeds/payments/:cartId/with-new-card",Session, async(req,res) => {
         const {card} = req.body;
 
         if (!card) {
@@ -43,6 +66,7 @@ export default (router) => {
             basketId:String(cart._id), // cart => sepet
             paymentChannel:Iyzipay.PAYMENT_CHANNEL.WEB,
             paymentGroup:Iyzipay.PAYMENT_GROUP.PRODUCT,
+            callbackUrl:`${process.env.END_POINT}/threeds/payments/complete`,
             paymentCard:card,
             buyer:{
                 id:String(req.user._id),
@@ -87,18 +111,17 @@ export default (router) => {
 
 
 
-        let result = await createPayment(data);
-        console.log(result);
-        await CompletePayment(result);
-        res.json(result);
+        let result = await Payments_3D.initializePayment(data);
+        const html = Buffer.from(result?.threeDSHtmlContent,'base64').toString();
+        //await CompletePayment(result);
+        res.send(html);
 
 
 
     }),
 
-
-    //  make payment and save card
-    router.post("/payments/:cartId/with-new-card/register-card",Session, async(req,res) => {
+    // make a payment and saved cart 3DS
+    router.post("/threeds/payments/:cartId/with-new-card/register-card",Session, async(req,res) => {
         const {card} = req.body;
 
         if (!card) {
@@ -115,13 +138,13 @@ export default (router) => {
             throw new ApiError("Card not found", 404 , "cardNotFound");
         }
         if (cart.completed) {
-            throw new ApiError("Cart is completed", 400 , "cartCompleted");
+            throw new ApiError("Card is completed", 400 , "cardCompleted");
         }
+        card.registerCard = "1";
+
         if (req.user?.cardUserKey) {
             card.cardUserKey = req.user?.cardUserKey;
         }
-
-        card.registerCard = "1";  // saved used card !
         const paidPrice = cart.products.map((product) => product.price).reduce((a,b) => a+b,0);
 
         const data ={
@@ -134,6 +157,7 @@ export default (router) => {
             basketId:String(cart._id), // cart => sepet
             paymentChannel:Iyzipay.PAYMENT_CHANNEL.WEB,
             paymentGroup:Iyzipay.PAYMENT_GROUP.PRODUCT,
+            callbackUrl:`${process.env.END_POINT}/threeds/payments/complete`,
             paymentCard:card,
             buyer:{
                 id:String(req.user._id),
@@ -177,29 +201,27 @@ export default (router) => {
         }
 
 
-        let result = await createPayment(data);
-        if (!req.user?.cardUserKey) {
-            const user = await Users.findOne({_id:req.user?._id});
-            user.cardUserKey = result?.cardUserKey;
-            await user.save();
-        }
-        console.log(result);
-        await CompletePayment(result);
-        res.json(result);
+
+        let result = await Payments_3D.initializePayment(data);
+        const html = Buffer.from(result?.threeDSHtmlContent,'base64').toString();
+        res.send(html);
 
 
 
     }),
 
-    // make a payment with saved card => cardIndex
-    router.post("/payments/:cartId/:cardIndex/with-registered-card-index",Session, async(req,res) => {
-        let {cardIndex} = req.params;
-        if(!cardIndex){
-            throw new ApiError("cardindex not found",400,"cardIndexNotFound")
-        }
+    // make a payment with saved cart (use cardIndex) 3DS
+    router.post("/threeds/payments/:cartId/:cardIndex/with-registered-card-index",Session, async(req,res) => {
+        const {cardIndex} = req.params;
+
+        if (!cardIndex) {
+            throw new ApiError("cardIndex is req", 400 , "cardIndexreq");
+        } 
+
         if (!req.user?.cardUserKey) {
             throw new ApiError("No registered card avaiable",400,"cardUserKeyRequired");
         }
+
         let cards = await Cards.getUserCards({
             locale: req.user.locale,
             conversationId: nanoid(),
@@ -211,7 +233,10 @@ export default (router) => {
             throw new ApiError("card not found",400,"cardnotfound");
         }
         const {cardToken} = cards?.cardDetails[index];
-
+        const card = {
+            cardToken,
+            cardUserKey:req.user?.cardUserKey
+        };
         if (!req.params?.cartId) {
             throw new ApiError("Card id is req", 400 , "cardIdreq");
         }
@@ -225,12 +250,11 @@ export default (router) => {
             throw new ApiError("Card is completed", 400 , "cardCompleted");
         }
 
+        if (req.user?.cardUserKey) {
+            card.cardUserKey = req.user?.cardUserKey;
+        }
         const paidPrice = cart.products.map((product) => product.price).reduce((a,b) => a+b,0);
 
-        const card = {
-            cardToken,
-            cardUserKey:req.user?.cardUserKey
-        }
         const data ={
             locale:req.user.locale,
             conversationId: nanoid(),
@@ -241,6 +265,7 @@ export default (router) => {
             basketId:String(cart._id), // cart => sepet
             paymentChannel:Iyzipay.PAYMENT_CHANNEL.WEB,
             paymentGroup:Iyzipay.PAYMENT_GROUP.PRODUCT,
+            callbackUrl:`${process.env.END_POINT}/threeds/payments/complete`,
             paymentCard:card,
             buyer:{
                 id:String(req.user._id),
@@ -285,26 +310,29 @@ export default (router) => {
 
 
 
-        let result = await createPayment(data);
-        console.log(result);
-        await CompletePayment(result);
-        res.json(result);
+        let result = await Payments_3D.initializePayment(data);
+        const html = Buffer.from(result?.threeDSHtmlContent,'base64').toString();
+        res.send(html);
 
 
 
     }),
 
-    // make a payment with saved card => cardToken 
+    // make a payment with saved cart (use cardToken) 3DS
+    router.post("/threeds/payments/:cartId/with-registered-card-token",Session, async(req,res) => {
+        const {cardToken} = req.body;
 
-    router.post("/payments/:cartId/with-registered-card-token",Session, async(req,res) => {
-        let {cardToken} = req.body;
-        if(!cardToken){
-            throw new ApiError("cardToken not found",400,"cardTokenNotFound")
-        }
+        if (!cardToken) {
+            throw new ApiError("cardToken is req", 400 , "cardTokenreq");
+        } 
+
         if (!req.user?.cardUserKey) {
             throw new ApiError("No registered card avaiable",400,"cardUserKeyRequired");
         }
-
+        const card = {
+            cardToken,
+            cardUserKey:req.user?.cardUserKey
+        };
         if (!req.params?.cartId) {
             throw new ApiError("Card id is req", 400 , "cardIdreq");
         }
@@ -318,12 +346,11 @@ export default (router) => {
             throw new ApiError("Card is completed", 400 , "cardCompleted");
         }
 
+        if (req.user?.cardUserKey) {
+            card.cardUserKey = req.user?.cardUserKey;
+        }
         const paidPrice = cart.products.map((product) => product.price).reduce((a,b) => a+b,0);
 
-        const card = {
-            cardToken,
-            cardUserKey:req.user?.cardUserKey
-        }
         const data ={
             locale:req.user.locale,
             conversationId: nanoid(),
@@ -334,6 +361,7 @@ export default (router) => {
             basketId:String(cart._id), // cart => sepet
             paymentChannel:Iyzipay.PAYMENT_CHANNEL.WEB,
             paymentGroup:Iyzipay.PAYMENT_GROUP.PRODUCT,
+            callbackUrl:`${process.env.END_POINT}/threeds/payments/complete`,
             paymentCard:card,
             buyer:{
                 id:String(req.user._id),
@@ -378,14 +406,11 @@ export default (router) => {
 
 
 
-        let result = await createPayment(data);
-        console.log(result);
-        await CompletePayment(result);
-        res.json(result);
+        let result = await Payments_3D.initializePayment(data);
+        const html = Buffer.from(result?.threeDSHtmlContent,'base64').toString();
+        res.send(html);
 
 
 
     })
-
-    
 }
