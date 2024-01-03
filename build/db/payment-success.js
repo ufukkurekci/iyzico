@@ -66,6 +66,11 @@ const PaymentSuccessSchema = new Schema({
     required: true,
     enum: ["TRY", "USD", "EUR"]
   },
+  paymentId: {
+    type: String,
+    required: true,
+    unique: true
+  },
   price: {
     type: Number,
     required: true
